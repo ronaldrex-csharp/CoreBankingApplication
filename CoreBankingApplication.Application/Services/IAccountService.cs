@@ -7,9 +7,13 @@ using System.Text;
 
 namespace CoreBankingApplication.Application.Services
 {
+    
     /// <summary>
-    /// Account service interface defining methods for managing bank accounts, including retrieval, creation, and updating of account information.
+    /// Defines methods for managing and retrieving bank account information.
     /// </summary>
+    /// <remarks>Implementations of this interface provide asynchronous operations for listing, retrieving,
+    /// creating, and updating bank accounts. Methods may return null if the specified account is not found. All
+    /// operations are asynchronous and should be awaited to avoid blocking the calling thread.</remarks>
     public interface IAccountService
     {
         Task<List<AccountListItemViewModel>> GetAccountListAsync();
