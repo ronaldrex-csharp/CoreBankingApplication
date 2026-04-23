@@ -7,6 +7,9 @@ using System.Text;
 
 namespace CoreBankingApplication.Application.Services
 {
+    /// <summary>
+    /// Account service interface defining methods for managing bank accounts, including retrieval, creation, and updating of account information.
+    /// </summary>
     public interface IAccountService
     {
         Task<List<AccountListItemViewModel>> GetAccountListAsync();
