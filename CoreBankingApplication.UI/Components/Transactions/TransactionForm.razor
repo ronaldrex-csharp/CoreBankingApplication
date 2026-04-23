@@ -1,0 +1,136 @@
+@using CoreBankingApplication.Infrastructure.Services
+@using CoreBankingApplication.UI.Models
+@using CoreBankingApplication.UI.UIModels
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Nav
+
+
+
+<section class="bank-card form-card sticky-form-card">
+    <div class="section-heading-row compact">
+        <div>
+            <h2>Post Transaction</h2>
+            <p class="section-subtitle">Create a deposit or withdrawal for this account.</p>
+        </div>
+    </div>
+
+    <!-- TRANSACTION TYPE DROPDOWN -->
+    <div class="form-group mb-3">
+        <label for="transactionType" class="form-label bank-label">Transaction Type</label>
+
+        <div class="select-wrapper">
+            <select id="transactionType"
+                    class="form-select bank-input transaction-select @(transactionType == "Deposit" ? "deposit-selected" : "withdrawal-selected")"
+                    @bind="transactionType">
+                <option value="Deposit">Deposit</option>
+                <option value="Withdrawal">Withdrawal</option>
+            </select>
+        </div>
+
+        <small class="field-hint">
+            Deposit adds funds · Withdrawal removes funds
+        </small>
+    </div>
+
+    <!-- FORM -->
+    <EditForm EditContext="@editContext" OnValidSubmit="Submit">
+        <DataAnnotationsValidator />
+
+        <!-- AMOUNT -->
+        <div class="form-group mb-3">
+            <label for="Amount" class="form-label bank-label">Amount</label>
+
+            <div class="input-group bank-input-group">
+                <span class="input-group-text bank-input-prefix">$</span>
+                <input type="number"
+                       class="form-control bank-input"
+                       id="Amount"
+                       step="0.01"
+                       min="0.01"
+                       max="500.00"
+                       value="@amountText"
+                       @oninput="OnAmountInput" />
+            </div>
+
+            <small class="field-hint">Minimum 0.01 · Maximum 500.00</small>
+            <ValidationMessage For="@(() => model.Amount)" />
+        </div>
+
+        <!-- BUTTONS -->
+        <div class="button-stack">
+            <button type="submit"
+                    class="btn @(isValid? GetSubmitButtonClass() : "btn-bank-disabled")"
+                    disabled="@(!isValid)">
+                @(transactionType == "Withdrawal" ? "Submit Withdrawal" : "Submit Deposit")
+            </button>
+
+            <button type="button"
+                    class="btn btn-bank-secondary"
+                    @onclick="GoBack">
+                Back to Accounts
+            </button>
+        </div>
+    </EditForm>
+</section>
+
+@code {
+    [Parameter] public EventCallback<TransactionInputModel> OnTransactionSubmit { get; set; }
+
+    private TransactionInputModel model = new();
+    private string transactionType = "Deposit";
+    private EditContext editContext = default!;
+    private string amountText = "";
+    private bool isValid = false;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(model);
+    }
+
+    private void OnAmountInput(ChangeEventArgs e)
+    {
+        amountText = e.Value?.ToString() ?? "";
+
+        if (decimal.TryParse(amountText, out var amount))
+        {
+            model.Amount = amount;
+        }
+        else
+        {
+            model.Amount = null;
+        }
+
+        isValid =
+            model.Amount.HasValue &&
+            model.Amount.Value >= 0.01m &&
+            model.Amount.Value <= 500.00m &&
+            decimal.Round(model.Amount.Value, 2) == model.Amount.Value;
+
+        editContext.NotifyFieldChanged(FieldIdentifier.Create(() => model.Amount));
+    }
+
+    private async Task Submit()
+    {
+        model.Type = transactionType;
+
+        await OnTransactionSubmit.InvokeAsync(model);
+
+        model = new TransactionInputModel();
+        editContext = new EditContext(model);
+        amountText = "";
+        transactionType = "Deposit";
+        isValid = false;
+    }
+
+    private string GetSubmitButtonClass()
+    {
+        return transactionType == "Withdrawal"
+            ? "btn-bank-danger"
+            : "btn-bank-success";
+    }
+
+    private void GoBack()
+    {
+        Nav.NavigateTo("/accounts/");
+    }
+}

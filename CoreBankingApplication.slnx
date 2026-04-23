@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Core/">
+    <Project Path="CoreBankingApplication.Application/CoreBankingApplication.Application.csproj" />
+    <Project Path="CoreBankingApplication.Domain/CoreBankingApplication.Domain.csproj" />
+    <Project Path="CoreBankingApplication.Infrastructure/CoreBankingApplication.Infrastructure.csproj" />
+  </Folder>
+  <Project Path="CoreBankingApplication.Tests/CoreBankingApplication.Tests.csproj" />
+  <Project Path="CoreBankingApplication.UI/CoreBankingApplication.UI.csproj" />
+</Solution>

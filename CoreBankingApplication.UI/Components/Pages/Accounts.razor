@@ -1,0 +1,124 @@
+@using CoreBankingApplication.Application.Services
+@using CoreBankingApplication.Application.ViewModels
+@using CoreBankingApplication.Domain.Entities
+@using CoreBankingApplication.UI.Services
+@page "/accounts"
+
+@inject IAccountService AccountService
+@inject ToastService ToastService
+@inject NavigationManager Nav
+
+<PageTitle>Accounts</PageTitle>
+
+<div class="page-stack">
+    <section class="page-header-row">
+        <div>
+            <div class="eyebrow">Accounts</div>
+            <h1 class="page-title">Account Directory</h1>
+            <p class="page-subtitle">Review customer account details and open transaction activity for a selected account.</p>
+        </div>
+    </section>
+
+    @if (accounts == null)
+    {
+        <Loading />
+    }
+    else
+    {
+        <section class="bank-card table-card">
+            <div class="section-heading-row">
+                <div>
+                    <h2>Customer Accounts</h2>
+                    <p class="section-subtitle">A consolidated view of balances and account numbers.</p>
+                </div>
+
+                <div class="table-header-actions">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+
+                        <input type="text"
+                               class="bank-input search-input"
+                               placeholder="Search customers..."
+                               @bind="searchTerm"
+                               @bind:event="oninput" />
+                    </div>
+
+                    <span class="section-badge">@FilteredAccounts.Count() account(s)</span>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table class="bank-table">
+                    <thead>
+                        <tr>
+                            <th>Customer Name</th>
+                            <th>Account Number</th>
+                            <th class="text-end">Balance</th>
+                            <th class="actions-header text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!FilteredAccounts.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center">
+                                    No matching customers found.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var account in FilteredAccounts)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="table-primary-text">
+                                            @(account.CustomerName ?? "NO CUSTOMER")
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="account-chip">@account.MaskedAccountNumber</span>
+                                    </td>
+                                    <td class="text-end balance-cell">
+                                        @account.Balance.ToString("C")
+                                    </td>
+                                    <td class="actions-cell text-center">
+                                        <button class="btn-bank-action"
+                                                title="View account activity"
+                                                @onclick="() => ViewTransactions(account.Id)">
+                                            <span class="action-icon">↗</span>
+                                            <span>View Activity</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    private List<AccountListItemViewModel> accounts = new();
+    private string searchTerm = "";
+
+    private IEnumerable<AccountListItemViewModel> FilteredAccounts =>
+        string.IsNullOrWhiteSpace(searchTerm)
+            ? accounts ?? Enumerable.Empty<AccountListItemViewModel>()
+            : (accounts ?? Enumerable.Empty<AccountListItemViewModel>())
+                .Where(a => a.CustomerName!= null &&
+                            !string.IsNullOrWhiteSpace(a.CustomerName) &&
+                            a.CustomerName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnParametersSetAsync()
+    {
+        accounts = await AccountService.GetAccountListAsync();
+    }
+
+    private void ViewTransactions(int accountId)
+    {
+        Nav.NavigateTo($"/transactions/{accountId}");
+    }
+}

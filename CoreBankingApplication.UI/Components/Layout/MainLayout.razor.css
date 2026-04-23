@@ -1,0 +1,85 @@
+.shell {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.topbar {
+    background-color: #1f2937; /* matches dark UI */
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #374151;
+}
+
+.nav-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand {
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+    .nav-links a {
+        color: #d1d5db;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+        .nav-links a:hover {
+            color: white;
+        }
+
+        .nav-links a.active {
+            color: white;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 4px;
+        }
+
+.main-shell {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+}
+
+.content-panel {
+    min-height: calc(100vh - 96px);
+}
+
+#blazor-error-ui {
+    color-scheme: light only;
+    background: #fef3c7;
+    color: #7c2d12;
+    bottom: 0;
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.12);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.85rem 1.25rem 0.95rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .main-shell {
+        padding: 1.25rem 1rem 2rem;
+    }
+}

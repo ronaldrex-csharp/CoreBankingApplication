@@ -1,0 +1,20 @@
+﻿@using CoreBankingApplication.Domain.Entities
+<div class="card mb-4">
+    <div class="card-header">
+        Account Details
+    </div>
+
+    <div class="card-body">
+        <h5 class="card-title">@Account.Name</h5>
+
+        <p class="card-text">
+            <strong>Account Number:</strong> @Account.AccountNumber<br />
+            <strong>Balance:</strong> @Account.Balance.ToString("C")
+        </p>
+    </div>
+</div>
+
+
+@code {
+    [Parameter] public BankAccount Account { get; set; } = default!;
+}

@@ -1,0 +1,57 @@
+﻿@using CoreBankingApplication.UI.Models
+@using CoreBankingApplication.UI.Services
+@implements IDisposable
+@inject ToastService ToastService
+
+@if (visible)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        <div class="toast show @GetToastCssClass()">
+            <div class="toast-body">
+                @Message
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private string Message = string.Empty;
+    private string Type = "success";
+    private bool visible;
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += ShowToast;
+    }
+
+    private async void ShowToast(ToastMessage toast)
+    {
+        Message = toast.Message;
+        Type = toast.Type;
+        visible = true;
+
+        StateHasChanged();
+
+        await Task.Delay(3000);
+
+        visible = false;
+        StateHasChanged();
+    }
+
+    private string GetToastCssClass()
+    {
+        return Type switch
+        {
+            "success" => "bg-success text-white",
+            "error" => "bg-danger text-white",
+            "warning" => "bg-warning text-dark",
+            "info" => "bg-info text-dark",
+            _ => "bg-secondary text-white"
+        };
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnShow -= ShowToast;
+    }
+}

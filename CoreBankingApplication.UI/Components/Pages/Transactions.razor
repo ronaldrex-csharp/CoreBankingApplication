@@ -1,0 +1,261 @@
+@page "/transactions/{AccountId:int}"
+@using CoreBankingApplication.Application.Common
+@using CoreBankingApplication.Application.Services
+@using CoreBankingApplication.Application.ViewModels
+@using CoreBankingApplication.Domain.Entities
+@using CoreBankingApplication.UI.Components.Common
+@using CoreBankingApplication.UI.Components.Transactions
+@using CoreBankingApplication.UI.Enums
+@using CoreBankingApplication.UI.Services
+@using CoreBankingApplication.UI.UIModels
+
+@inject IAccountService AccountService
+@inject ITransactionService TransactionService
+@inject ToastService ToastService
+@inject AuthService AuthService
+@inject NavigationManager Nav
+
+
+<div class="page-stack">
+    <section class="page-header-row">
+        <div>
+            <div class="eyebrow">Transactions</div>
+            <h1 class="page-title">Account Activity</h1>
+            <p class="page-subtitle">
+                Review balances, post transactions, and monitor account movement in one place.
+            </p>
+        </div>
+        <button class="btn btn-bank-secondary"
+                @onclick='() => Nav.NavigateTo("/accounts")'>
+            Back to Accounts
+        </button>
+    </section>
+
+    @switch (state)
+    {
+        case PageState.Loading:
+            <div class="bank-card state-card">
+                <Loading />
+            </div>
+            break;
+
+        case PageState.NotFound:
+            <div class="bank-card state-card">
+                <NotFound />
+            </div>
+            break;
+
+        case PageState.Loaded:
+            {
+              <div class="transactions-layout">
+                 <div class="transactions-main">
+                    <AccountSummary Account="accountDisplay" />
+
+                      @if (pagedTransactions.Items.Count > 0)
+                        {
+                          <section class="bank-card table-card">
+                             <div class="section-heading-row">
+                                 <div>
+                                    <h2>Transaction History</h2>
+                                        <p class="section-subtitle">
+                                            Review recent activity and sort by amount.
+                                        </p>
+                                    </div>
+                                   <button class="btn btn-bank-secondary"
+                                      @onclick="ToggleSort">
+                                        Sort by Amount:
+                                        @(isDescending ? "Low → High" : "High → Low")
+                                   </button>
+                                </div>
+                       <TransactionList Transactions="pagedTransactions.Items" />
+                              <div class="mt-3 d-flex justify-content-between align-items-center">
+                                    <select @onchange="ChangePageSize" class="form-select w-auto">
+                                        <option value="5">5</option>
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                    </select>
+
+                                    <button class="btn btn-bank-secondary"
+                                            @onclick="PreviousPage"
+                                            disabled="@(currentPage == 1)">
+                                        <i class="bi bi-arrow-left"></i> Previous
+                                    </button>
+
+                                    <span>
+                                        Page @currentPage of @pagedTransactions.TotalPages
+                                    </span>
+
+                                    <button class="btn btn-bank-secondary"
+                                            @onclick="NextPage"
+                                            disabled="@(currentPage == pagedTransactions.TotalPages)">
+                                        Next <i class="bi bi-arrow-right"></i>
+                                    </button>
+                                </div>
+
+                            </section>
+                        }
+
+                        <DynamicMessage TModel="BankAccount"
+                                        Model="account"
+                                        MessageFunc="GetTransactionMessage"
+                                        CssClass="alert-warning bank-alert bank-alert-warning" />
+
+                    </div>
+
+                    <aside class="transactions-side">
+                        <TransactionForm OnTransactionSubmit="HandleTransactionSubmit" />
+                    </aside>
+                </div>
+
+                break;
+            }
+        case PageState.Error:
+            <div class="bank-card state-card">
+                <Error />
+            </div>
+            break;
+    }
+</div>
+
+@code {
+    //  PAGING STATE
+    private PagedResult<TransactionListItemViewModel> pagedTransactions = new();
+    private int currentPage = 1;
+    private int pageSize = 5;
+    private bool isDescending = true;
+
+    //   ACCOUNT DATA
+    private BankAccountViewModel? accountDisplay;
+    private BankAccount? account;
+
+    private PageState state = PageState.Loading;
+
+    [Parameter]
+    public int AccountId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!AuthService.IsAuthenticated)
+        {
+            Nav.NavigateTo("/login", forceLoad: true);
+            return;
+        }
+
+        state = PageState.Loading;
+
+        try
+        {
+            accountDisplay = await AccountService.GetBankAccountViewModelByIdAsync(AccountId);
+            account = await AccountService.GetAccountByIdAsync(AccountId);
+
+            if (account == null)
+            {
+                state = PageState.NotFound;
+                return;
+            }
+
+            await LoadTransactions();
+
+            state = PageState.Loaded;
+        }
+        catch
+        {
+            state = PageState.Error;
+        }
+    }
+    //   LOAD DATA
+    private async Task LoadTransactions()
+    {
+        pagedTransactions = await TransactionService.GetTransactionsAsync(
+            AccountId,
+            currentPage,
+            pageSize,
+            isDescending);
+    }
+
+    //     SORT
+    private async Task ToggleSort()
+    {
+        isDescending = !isDescending;
+        currentPage = 1;
+        await LoadTransactions();
+    }
+
+    //    PAGING
+    private async Task NextPage()
+    {
+        if (currentPage < pagedTransactions.TotalPages)
+        {
+            currentPage++;
+            await LoadTransactions();
+        }
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadTransactions();
+        }
+    }
+
+    //   CREATE TRANSACTION
+    private async Task HandleTransactionSubmit(TransactionInputModel transaction)
+    {
+        if (account == null || transaction.Amount == null || transaction.Amount <= 0)
+            return;
+
+        bool isDeposit = transaction.Type == "Deposit";
+
+        try
+        {
+            await TransactionService.CreateTransactionAsync(
+                account.Id,
+                transaction.Amount.Value,
+                isDeposit);
+
+            await RefreshModels();
+
+            ToastService.ShowToast(
+                isDeposit ? "Deposit successful" : "Withdrawal successful",
+                "success");
+        }
+        catch (InvalidOperationException ex)
+        {
+            ToastService.ShowToast(ex.Message, "error");
+        }
+        catch
+        {
+            ToastService.ShowToast("Something went wrong while posting the transaction.", "error");
+        }
+    }
+
+    //   REFRESH
+    private async Task RefreshModels()
+    {
+        account = await AccountService.GetAccountByIdAsync(AccountId);
+        accountDisplay = await AccountService.GetBankAccountViewModelByIdAsync(AccountId);
+
+        currentPage = 1;
+        await LoadTransactions();
+    }
+
+    //   MESSAGE
+    private string GetTransactionMessage(BankAccount? account)
+    {
+        if (account == null)
+            return "Account not found.";
+
+        if (pagedTransactions.Items.Count == 0)
+            return $"{account.Name} has no transactions.";
+
+        return "";
+    }
+    private async Task ChangePageSize(ChangeEventArgs e)
+    {
+        pageSize = int.Parse(e.Value.ToString());
+        currentPage = 1;
+        await LoadTransactions();
+    }
+}

@@ -1,0 +1,21 @@
+@inherits LayoutComponentBase
+
+<div>
+    <!-- 🔹 TOP NAV -->
+    <header class="topbar">
+        <div class="nav-container">
+            <div class="brand">Core Banking</div>
+
+            <nav class="nav-links">
+                <NavLink href="/" Match="NavLinkMatch.All">Home</NavLink>
+                <NavLink href="/accounts">Accounts</NavLink>
+                <NavLink href="/transactions">Transactions</NavLink>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 🔹 PAGE CONTENT -->
+    <div class="p-4">
+        @Body
+    </div>
+</div>

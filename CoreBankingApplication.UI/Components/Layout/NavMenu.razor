@@ -1,0 +1,48 @@
+@using CoreBankingApplication.Application.Services
+@inject AuthService AuthService
+@inject NavigationManager Nav
+@implements IDisposable
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm px-3">
+    <span class="navbar-brand fw-bold">Core Banking</span>
+
+    <div class="ms-auto d-flex gap-3">
+        <NavLink class="nav-link" href="/">Home</NavLink>
+        <NavLink class="nav-link" href="/accounts">Accounts</NavLink>
+        <NavLink class="nav-link" href="/transactions">Transactions</NavLink>
+    
+    </div>
+</nav>
+
+    @if (AuthService.IsAuthenticated)
+    {
+        <span class="welcome-text">
+            Welcome, @AuthService.Username
+        </span>
+
+        <button class="bank-link" @onclick="Logout">
+            Log Out
+        </button>
+    }
+    else
+    {
+        <NavLink class="bank-link" href="/login">Login</NavLink>
+    }
+
+
+@code {
+    private void Logout()
+    {
+        AuthService.Logout();
+        Nav.NavigateTo("/login", forceLoad: true);
+    }
+    protected override void OnInitialized()
+    {
+        AuthService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        AuthService.OnChange -= StateHasChanged;
+    }
+}

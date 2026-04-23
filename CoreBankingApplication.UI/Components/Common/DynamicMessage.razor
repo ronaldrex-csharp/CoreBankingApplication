@@ -1,0 +1,18 @@
+﻿@typeparam TModel
+
+@if (!string.IsNullOrWhiteSpace(Message))
+{
+    <div class="alert @CssClass" role="alert">
+        @Message
+    </div>
+}
+
+@code {
+    [Parameter] public TModel Model { get; set; } = default!;
+    [Parameter] public Func<TModel, string>? MessageFunc { get; set; }
+
+    // Optional: allow different Bootstrap styles (info, warning, danger, etc.)
+    [Parameter] public string CssClass { get; set; } = "alert-info";
+
+    private string Message => MessageFunc?.Invoke(Model) ?? string.Empty;
+}

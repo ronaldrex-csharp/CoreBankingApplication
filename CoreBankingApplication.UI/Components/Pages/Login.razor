@@ -1,0 +1,48 @@
+﻿@page "/login"
+@using CoreBankingApplication.Application.Services
+@inject AuthService AuthService
+@inject NavigationManager Nav
+
+<div class="login-container">
+    <div class="bank-card login-card">
+
+        <div class="login-header">
+            <div class="brand-mark large">CB</div>
+            <h2>Core Banking</h2>
+            <p class="section-subtitle">Operations Console</p>
+        </div>
+
+        <div class="login-form">
+            <input @bind="username" placeholder="Username" class="login-input" />
+            <input @bind="password" type="password" placeholder="Password" class="login-input" />
+
+            <button class="btn-bank-primary login-button" @onclick="HandleLogin">
+                Sign In
+            </button>
+
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="login-error">@error</div>
+            }
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private string username = "";
+    private string password = "";
+    private string error = "";
+
+    private void HandleLogin()
+    {
+        if (AuthService.Login(username, password))
+        {
+            Nav.NavigateTo("/accounts");
+        }
+        else
+        {
+            error = "Invalid username or password";
+        }
+    }
+}

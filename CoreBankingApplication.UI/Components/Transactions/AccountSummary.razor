@@ -1,0 +1,36 @@
+@using CoreBankingApplication.Application.ViewModels
+
+@if (Account != null)
+{
+    <section class="bank-card hero-account-card">
+        <div class="account-card-header">
+            <div>
+                <div class="eyebrow">Account Activity</div>
+
+                <!-- Customer Name -->
+                <h2 class="section-title">@Account.FullName</h2>
+
+                <!-- Subtitle -->
+                <p class="section-subtitle">
+                    Review balances, post transactions, and monitor recent account movement.
+                </p>
+            </div>
+        </div>
+
+        <div class="summary-grid two-up">
+            <div class="summary-panel">
+                <span class="summary-label">Available Balance</span>
+                <span class="summary-money">@Account.Balance.ToString("C")</span>
+            </div>
+
+            <div class="summary-panel">
+                <span class="summary-label">Account Number</span>
+                <span class="summary-value">@Account.MaskedAccountNumber</span>
+            </div>
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter] public BankAccountViewModel? Account { get; set; }
+}

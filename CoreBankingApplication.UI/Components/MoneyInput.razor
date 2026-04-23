@@ -1,0 +1,75 @@
+﻿@using System.Globalization
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="mb-3">
+    <label class="form-label">@Label</label>
+
+    <div class="input-group">
+        <span class="input-group-text">$</span>
+
+        <input class="form-control"
+               value="@DisplayValue"
+               @oninput="HandleInput"
+               @onblur="FormatOnBlur" />
+    </div>
+
+    <ValidationMessage For="ValueExpression" />
+</div>
+
+@code {
+    [CascadingParameter] private EditContext EditContext { get; set; }
+
+    [Parameter] public string Label { get; set; } = "Enter Amount";
+
+    [Parameter] public decimal? Value { get; set; }
+    [Parameter] public EventCallback<decimal?> ValueChanged { get; set; }
+    [Parameter] public Expression<Func<decimal?>> ValueExpression { get; set; }
+
+    private string DisplayValue { get; set; } = "";
+
+    private FieldIdentifier _fieldIdentifier;
+
+    protected override void OnInitialized()
+    {
+        if (EditContext == null)
+            throw new InvalidOperationException("MoneyInput must be inside an EditForm");
+
+        _fieldIdentifier = FieldIdentifier.Create(ValueExpression);
+    }
+
+    protected override void OnParametersSet()
+    {
+        DisplayValue = Value?.ToString("0.00") ?? "";
+    }
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        DisplayValue = e.Value?.ToString() ?? "";
+
+        if (decimal.TryParse(DisplayValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed))
+        {
+            Value = parsed;
+            await ValueChanged.InvokeAsync(Value);
+        }
+        else
+        {
+            Value = null;
+            await ValueChanged.InvokeAsync(null);
+        }
+
+        
+        EditContext.NotifyFieldChanged(_fieldIdentifier);
+    }
+
+    private async Task FormatOnBlur(FocusEventArgs e)
+    {
+        if (decimal.TryParse(DisplayValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed))
+        {
+            Value = parsed;
+            DisplayValue = parsed.ToString("0.00");
+
+            await ValueChanged.InvokeAsync(Value);
+        }
+    }
+}
