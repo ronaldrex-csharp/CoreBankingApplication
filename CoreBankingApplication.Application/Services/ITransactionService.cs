@@ -5,6 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+/// <summary>
+/// Transaction service interface defining methods for managing transactions, including creation and retrieval 
+/// of transaction history for bank accounts.
+
 namespace CoreBankingApplication.Application.Services
 {
     public interface ITransactionService
