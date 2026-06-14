@@ -5,8 +5,7 @@ CoreBankingApplication is a secure banking system built with ASP.NET Core, Entit
 ## Live Demo
 
 Application URL:
-
-bankapplication-d8dtepfje8e9dsds.centralus-01.azurewebsites.net
+https://bankapplication-d8dtepfje8e9dsds.centralus-01.azurewebsites.net/
 
 ## Demo Access
 
