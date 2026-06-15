@@ -1,6 +1,6 @@
 # CoreBankingApplication
 
-CoreBankingApplication is a secure banking application built with ASP.NET Core, Entity Framework Core, SQL Server, and ASP.NET Core Identity. The application allows users to create and manage bank accounts, perform financial transactions, and securely access banking features through a modern web interface.
+CoreBankingApplication is a secure banking application built with ASP.NET Core, Entity Framework Core and Sqlite. The application allows users to create and manage transactions through a modern web interface.
 
 ## Live Demo
 
