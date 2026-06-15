@@ -16,15 +16,10 @@ Password: password
 
 ## Features
 
-* User registration and login
-* ASP.NET Core Identity authentication and authorization
 * Account creation and management
 * Deposit funds
 * Withdraw funds
-* Transfer funds between accounts
 * Transaction history and account activity
-* Administrative account management
-* Role-based security
 * Responsive user interface
 * Server-side validation
 * Azure cloud deployment
@@ -80,7 +75,6 @@ Key entities include:
 * Users
 * Bank Accounts
 * Transactions
-* Roles
 * Account Activity
 
 ## Running Locally
